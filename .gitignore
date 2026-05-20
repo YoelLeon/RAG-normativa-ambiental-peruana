@@ -1,0 +1,28 @@
+﻿# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Variables de entorno
+.env
+
+# Archivos generados
+data/processed/*
+data/chunks/*
+experiments/resultados/*
+
+# Bases vectoriales locales
+chroma_db/
+qdrant_storage/
+faiss_index/
+
+# Sistema
+.DS_Store
+Thumbs.db
