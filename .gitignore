@@ -26,3 +26,40 @@ faiss_index/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+
+# Entornos virtuales
+venv/
+.env
+
+# Archivos de Colab
+/content/
+
+# Caché de modelos
+.cache/
+
+# PyTorch
+*.pt
+
+# HuggingFace
+huggingface/
+
+# Qdrant local
+qdrant_storage/
