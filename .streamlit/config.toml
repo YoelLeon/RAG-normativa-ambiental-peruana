@@ -1,0 +1,9 @@
+[server]
+headless = false
+enableCORS = false
+
+[runner]
+magicEnabled = false
+
+[browser]
+gatherUsageStats = false

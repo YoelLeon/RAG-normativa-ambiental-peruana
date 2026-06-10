@@ -1,0 +1,34 @@
+# ─── Core ───────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ─── Extracción PDF ──────────────────────────────────────────────────────────
+PyMuPDF==1.24.9
+pdfplumber==0.11.4        # respaldo para tablas y PDFs difíciles
+
+# ─── Procesamiento de datos ──────────────────────────────────────────────────
+pandas>=2.1.0
+numpy>=1.26.0
+
+# ─── Embeddings (NB04-05 en Colab con GPU) ───────────────────────────────────
+# torch y torchvision se instalan manualmente en Colab:
+#   pip install torch==2.4.0 torchvision==0.19.0 --index-url .../cu121
+# Versiones exactas para compatibilidad con BGE-M3:
+transformers==4.44.2
+FlagEmbedding==1.2.11
+sentence-transformers==3.0.1  # alternativa ligera
+
+# ─── Base vectorial ──────────────────────────────────────────────────────────
+qdrant-client>=1.10.1
+
+# ─── Búsqueda lexical ────────────────────────────────────────────────────────
+rank-bm25==0.2.2
+
+# ─── LLM generativo ──────────────────────────────────────────────────────────
+groq>=0.9.0
+
+# ─── Evaluación ──────────────────────────────────────────────────────────────
+scikit-learn>=1.4.0
+tqdm>=4.66.0
+
+# ─── Interfaz demo ───────────────────────────────────────────────────────────
+streamlit==1.37.0
