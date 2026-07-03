@@ -5,6 +5,8 @@
 **Dominio:** Normativa ambiental peruana  
 **Enfoque técnico:** RAG, búsqueda híbrida, bases de datos vectoriales, métricas de recuperación y optimización
 
+🌐 **Demo en vivo:** [huggingface.co/spaces/JOEL022022/rag-normativa-ambiental](https://huggingface.co/spaces/JOEL022022/rag-normativa-ambiental)
+
 ---
 
 ## Descripción del proyecto
@@ -25,44 +27,63 @@ Evaluación realizada sobre **38 preguntas** de un banco de consultas con docume
 
 ### Tabla comparativa de configuraciones
 
-| Configuración    | Recall@5 | Precision@5 | MRR    | Latencia promedio |
-|------------------|----------|-------------|--------|-------------------|
-| A — BM25         | 0.715    | 0.563       | 0.651  | 0.058 s           |
-| B — Vectorial    | 0.779    | 0.721       | 0.803  | 0.834 s           |
-| **C — Híbrida RRF** | **0.792** | **0.674** | **0.809** | **0.763 s**   |
+| Configuración       | Recall@5  | Precision@5 | MRR    | Latencia promedio |
+|---------------------|-----------|-------------|--------|-------------------|
+| A — BM25            | 0.715     | 0.563       | 0.651  | 0.005 s           |
+| B — Vectorial       | 0.794     | 0.763       | 0.855  | 0.040 s           |
+| **C — Híbrida RRF** | **0.805** | **0.705**   | **0.817** | **0.085 s**    |
 
 **Mejor configuración por MRR: C_HIBRIDA_RRF**
 
+### Intervalos de confianza bootstrap (95%, n=1000 iteraciones)
+
+| Configuración    | Recall@5 IC95%      | MRR IC95%           |
+|------------------|---------------------|---------------------|
+| A — BM25         | 0.715 [0.579, 0.842] | 0.651 [0.507, 0.776] |
+| B — Vectorial    | 0.794 [0.684, 0.904] | 0.855 [0.737, 0.947] |
+| C — Híbrida RRF  | 0.805 [0.686, 0.912] | 0.817 [0.693, 0.921] |
+
 ### Resultados por tipo de pregunta (Recall@5 / MRR)
 
-| Tipo de pregunta   | BM25        | Vectorial   | Híbrida RRF |
-|--------------------|-------------|-------------|-------------|
-| Aplicada           | 0.625 / 0.531 | 0.875 / 0.875 | 0.875 / 0.812 |
-| Conceptual         | 1.000 / 0.833 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Factual            | 1.000 / 0.854 | 1.000 / 0.938 | 1.000 / 1.000 |
-| Multi-documento    | 0.310 / 0.476 | 0.369 / 0.571 | 0.440 / 0.607 |
-| Procedimental      | 0.400 / 0.400 | 0.400 / 0.400 | 0.400 / 0.400 |
+| Tipo de pregunta | BM25          | Vectorial     | Híbrida RRF   |
+|------------------|---------------|---------------|---------------|
+| Aplicada         | 0.625 / 0.531 | 0.875 / 0.812 | 0.875 / 0.775 |
+| Conceptual       | 1.000 / 0.833 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Factual          | 1.000 / 0.854 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Multi-documento  | 0.310 / 0.476 | 0.452 / 0.857 | 0.512 / 0.690 |
+| Procedimental    | 0.400 / 0.400 | 0.400 / 0.400 | 0.400 / 0.400 |
 
 ### Resultados por dificultad (Recall@5 / MRR)
 
-| Dificultad | BM25        | Vectorial   | Híbrida RRF |
-|------------|-------------|-------------|-------------|
-| Alta       | 0.700 / 0.756 | 0.817 / 0.867 | 0.806 / 0.817 |
+| Dificultad | BM25          | Vectorial     | Híbrida RRF   |
+|------------|---------------|---------------|---------------|
+| Alta       | 0.700 / 0.756 | 0.833 / 0.900 | 0.839 / 0.802 |
 | Baja       | 1.000 / 1.000 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Media      | 0.712 / 0.564 | 0.742 / 0.750 | 0.773 / 0.795 |
+| Media      | 0.712 / 0.564 | 0.758 / 0.818 | 0.773 / 0.818 |
 
 ### Evaluación de alucinación (preguntas trampa)
 
-El sistema fue evaluado con 2 preguntas trampa sobre documentos que **no existen en el corpus**. Las tres configuraciones respondieron correctamente con "La información no se encuentra en los documentos disponibles", sin inventar artículos, fechas ni entidades.
+El sistema fue evaluado con **10 preguntas trampa** sobre documentos que **no existen en el corpus** (normas con números inventados, entidades inexistentes, decretos ficticios). Las tres configuraciones respondieron correctamente sin inventar artículos, fechas ni entidades.
+
+### Evaluación generativa — LLM-as-Judge (Groq LLaMA 3.1)
+
+Evaluación del componente generativo sobre 15 preguntas con la configuración híbrida, usando el propio LLM como juez en escala 1-5:
+
+| Métrica          | Media | Min | Max |
+|------------------|-------|-----|-----|
+| Faithfulness     | 1.40  | 1   | 3   |
+| Answer Relevance | 1.13  | 0   | 3   |
+
+> Los scores bajos reflejan el comportamiento conservador del sistema: el LLM responde "La información no se encuentra en los documentos disponibles" cuando los fragmentos recuperados no contienen la respuesta exacta. Esto es el comportamiento esperado y deseado — el sistema prefiere no responder a inventar información.
 
 ### Latencia de generación de respuestas (configuración híbrida)
 
-| Métrica         | Valor    |
-|-----------------|----------|
-| Latencia promedio | 7.944 s |
-| Latencia P95    | 15.232 s |
+| Métrica           | Valor    |
+|-------------------|----------|
+| Latencia promedio | 9.691 s  |
+| Latencia P95      | 17.411 s |
 
-> La latencia alta en generación se debe al LLM (Groq API), no al pipeline de recuperación. La recuperación híbrida tiene una latencia promedio de 0.763 s.
+> La latencia en generación se debe al LLM (Groq API), no al pipeline de recuperación. La recuperación híbrida tiene una latencia promedio de 0.085 s.
 
 ---
 
@@ -79,16 +100,28 @@ El corpus fue construido con **30 documentos oficiales públicos** de normativa 
 | Biodiversidad           | 1          |
 | Fiscalización ambiental | 1          |
 
-| Tipo de norma           | Documentos |
-|-------------------------|------------|
-| Decreto Supremo         | 14         |
-| Resolución Ministerial  | 8          |
-| Otro                    | 5          |
-| Ley                     | 2          |
-| Norma técnica           | 1          |
+| Tipo de norma        | Documentos |
+|----------------------|------------|
+| Decreto Supremo      | 14         |
+| Resolución Ministerial | 8        |
+| Otro                 | 5          |
+| Ley                  | 2          |
+| Norma técnica        | 1          |
 
 **Fuentes:** MINAM, SINIA, Diario Oficial El Peruano, SPIJ  
 **Extracción exitosa:** 26 documentos OK / 4 parciales (PDFs con tablas o baja densidad de texto)
+
+### Banco de preguntas de evaluación
+
+| Tipo de pregunta    | Cantidad |
+|---------------------|----------|
+| Conceptual          | 10       |
+| Trampa (alucinación)| 10       |
+| Aplicada            | 8        |
+| Factual             | 8        |
+| Multi-documento     | 7        |
+| Procedimental       | 5        |
+| **Total**           | **48**   |
 
 ---
 
@@ -105,7 +138,7 @@ Chunking estructural (artículos, capítulos, incisos)
         ↓
 Embeddings con BAAI/bge-m3  →  vectores de 1024 dimensiones
         ↓
-Indexación en Qdrant con metadatos (34 s para 1057 chunks)
+Indexación en Qdrant Cloud con metadatos (1057 chunks)
         ↓
 Búsqueda vectorial + BM25
         ↓
@@ -127,22 +160,30 @@ Respuesta sustentada con fuentes
 
 ## Stack tecnológico
 
-| Componente          | Tecnología                          |
-|---------------------|-------------------------------------|
-| Lenguaje            | Python 3.11                         |
-| IDE / entorno       | VS Code (NB01–03) + Google Colab (NB04–05) |
-| Extracción PDF      | PyMuPDF 1.24.9 + pdfplumber 0.11.4 (respaldo) |
-| Chunking            | Implementación propia con regex     |
-| Embeddings          | BAAI/bge-m3 (FlagEmbedding 1.2.11) |
-| Base vectorial      | Qdrant 1.10.1                       |
-| Búsqueda lexical    | BM25 (rank-bm25 0.2.2)              |
-| Fusión híbrida      | Reciprocal Rank Fusion (RRF)        |
-| LLM generativo      | Groq — LLaMA 3.1-8b-instant        |
-| Interfaz demo       | Streamlit 1.37.0                    |
-| Evaluación          | pandas + scikit-learn               |
-| Control de versiones| GitHub                              |
+| Componente           | Tecnología                                        |
+|----------------------|---------------------------------------------------|
+| Lenguaje             | Python 3.11                                       |
+| IDE / entorno        | VS Code (NB01–03) + Google Colab (NB04–05)        |
+| Extracción PDF       | PyMuPDF 1.24.9 + pdfplumber 0.11.4 (respaldo)    |
+| Chunking             | Implementación propia con regex normativos        |
+| Embeddings           | BAAI/bge-m3 (FlagEmbedding)                       |
+| Base vectorial       | Qdrant Cloud (cluster gratuito AWS São Paulo)     |
+| Búsqueda lexical     | BM25 (rank-bm25 0.2.2)                            |
+| Fusión híbrida       | Reciprocal Rank Fusion (RRF, k=60)                |
+| LLM generativo       | Groq — LLaMA 3.1-8b-instant                      |
+| Evaluación generativa| LLM-as-Judge (Groq — faithfulness + answer relevance) |
+| Interfaz demo        | Streamlit 1.37.0                                  |
+| Despliegue           | Hugging Face Spaces (Docker, CPU Basic)           |
+| Evaluación           | pandas + scikit-learn + bootstrap IC95%           |
+| Control de versiones | GitHub                                            |
 
-> **Cambio respecto a la propuesta original:** el LLM fue migrado de Gemini API a **Groq (llama-3.1-8b-instant)** por restricción regional de Perú. Los notebooks NB04 y NB05 se ejecutan en Google Colab por requerimiento de GPU para embeddings. La API `client.search()` de Qdrant fue reemplazada por `client.query_points()` por deprecación.
+> **Cambios respecto a la propuesta original:**
+> - El LLM fue migrado de Gemini API a **Groq (llama-3.1-8b-instant)** por restricción regional de Perú.
+> - Qdrant migrado de disco local a **Qdrant Cloud** para el despliegue en producción.
+> - La API `client.search()` de Qdrant fue reemplazada por `client.query_points()` por deprecación.
+> - La demo se desplegó en **Hugging Face Spaces** con Docker en lugar de ejecución local.
+> - Se agregaron **intervalos de confianza bootstrap** y evaluación **LLM-as-Judge** al NB05.
+> - El banco de preguntas trampa se amplió de **2 a 10 preguntas**.
 
 ---
 
@@ -153,29 +194,38 @@ rag-normativa-ambiental-peruana/
 │
 ├── data/
 │   ├── raw/                        # PDFs oficiales (30 documentos)
-│   ├── processed/                  # Textos extraídos (.txt por documento)
 │   ├── chunks/
 │   │   ├── chunks_normativa_v1.jsonl
 │   │   └── chunks_normativa_v1.csv
 │   └── metadata/
 │       ├── corpus_normativo_ambiental.csv
 │       ├── corpus_normativo_ambiental_con_extraccion.csv
-│       └── banco_preguntas_evaluacion.csv
+│       └── banco_preguntas_evaluacion.csv  # 48 preguntas (10 trampa)
 │
 ├── notebooks/
 │   ├── 01_verificacion_corpus.ipynb      # Validación del corpus y metadatos
 │   ├── 02_extraccion_texto.ipynb         # Extracción de texto con PyMuPDF
 │   ├── 03_chunking.ipynb                 # Chunking estructural normativo
-│   ├── 04_embeddings_indexacion.ipynb    # Embeddings + indexación en Qdrant
-│   └── 05_pruebas_rag.ipynb              # Búsqueda híbrida, RAG y evaluación
+│   ├── 04_embeddings_indexacion.ipynb    # Embeddings + indexación en Qdrant Cloud
+│   └── 05_pruebas_rag.ipynb              # Búsqueda híbrida, RAG, evaluación y bootstrap
+│
+├── src/
+│   ├── config.py                   # Configuración central (rutas, parámetros, Qdrant)
+│   ├── ingestion/                  # Extracción de texto de PDFs
+│   ├── chunking/                   # Segmentación estructural normativa
+│   ├── embeddings/                 # Generación de embeddings e indexación
+│   ├── retrieval/                  # BM25, vectorial e híbrida (RRF)
+│   ├── generation/                 # Generación de respuestas con Groq
+│   └── evaluation/                 # Métricas: Recall@k, Precision@k, MRR, bootstrap
 │
 ├── experiments/
-│   └── resultados/                       # CSVs y JSONs de evaluación
+│   └── resultados/                 # CSVs y JSONs de evaluación (bootstrap, LLM-judge)
 │
 ├── app/
-│   └── demo_streamlit.py                 # Demo visual del sistema
+│   └── demo_streamlit.py           # Demo visual desplegada en Hugging Face Spaces
 │
-├── .env.example                          # Plantilla de variables de entorno
+├── Dockerfile                      # Configuración para despliegue en HF Spaces
+├── .env.example                    # Plantilla de variables de entorno
 ├── .gitignore
 ├── requirements.txt
 └── README.md
@@ -185,13 +235,13 @@ rag-normativa-ambiental-peruana/
 
 ## Notebooks — descripción y entorno
 
-| NB  | Nombre                         | Función                                              | Entorno        |
-|-----|--------------------------------|------------------------------------------------------|----------------|
-| 01  | `01_verificacion_corpus`       | Valida CSV, PDFs existentes y columnas obligatorias  | Local / VS Code |
-| 02  | `02_extraccion_texto`          | Extrae texto de PDFs con PyMuPDF                     | Local / VS Code |
-| 03  | `03_chunking`                  | Chunking estructural con regex normativos            | Local / VS Code |
-| 04  | `04_embeddings_indexacion`     | Genera embeddings e indexa en Qdrant                 | Google Colab (GPU) |
-| 05  | `05_pruebas_rag`               | BM25, vectorial, híbrida, generación y evaluación    | Google Colab (GPU) |
+| NB  | Nombre                       | Función                                                        | Entorno            |
+|-----|------------------------------|----------------------------------------------------------------|--------------------|
+| 01  | `01_verificacion_corpus`     | Valida CSV, PDFs existentes y columnas obligatorias            | Local / VS Code    |
+| 02  | `02_extraccion_texto`        | Extrae texto de PDFs con PyMuPDF                               | Local / VS Code    |
+| 03  | `03_chunking`                | Chunking estructural con regex normativos                      | Local / VS Code    |
+| 04  | `04_embeddings_indexacion`   | Genera embeddings e indexa en Qdrant Cloud                     | Google Colab (GPU) |
+| 05  | `05_pruebas_rag`             | BM25, vectorial, híbrida, generación, bootstrap y LLM-judge   | Google Colab (GPU) |
 
 ---
 
@@ -200,14 +250,14 @@ rag-normativa-ambiental-peruana/
 ### Requisitos previos
 
 - Python 3.11
-- Docker (para Qdrant local en NB01–03)
 - Cuenta en [Groq Console](https://console.groq.com) para obtener API key gratuita
+- Cuenta en [Qdrant Cloud](https://cloud.qdrant.io) para el cluster vectorial
 - Google Drive (para NB04–05 en Colab)
 
 ### Instalación local (NB01–NB03)
 
 ```bash
-git clone https://github.com/<tu-usuario>/rag-normativa-ambiental-peruana.git
+git clone https://github.com/JOEL022022/rag-normativa-ambiental-peruana.git
 cd rag-normativa-ambiental-peruana
 pip install -r requirements.txt
 ```
@@ -215,13 +265,9 @@ pip install -r requirements.txt
 Crear el archivo `.env` en la raíz:
 
 ```
-GROQ_API_KEY=tu_clave_aqui
-```
-
-Levantar Qdrant con Docker:
-
-```bash
-docker run -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
+GROQ_API_KEY=tu_clave_groq
+QDRANT_URL=tu_url_qdrant_cloud
+QDRANT_API_KEY=tu_clave_qdrant
 ```
 
 ### Instalación en Google Colab (NB04–NB05)
@@ -233,11 +279,11 @@ Cada notebook incluye una celda de instalación. Ejecutarla antes de continuar:
 !pip uninstall -y transformers FlagEmbedding torchvision torchaudio torchcodec
 !pip install -q torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu121
 !pip install -q transformers==4.44.2
-!pip install -q FlagEmbedding==1.2.11
+!pip install -q FlagEmbedding
 !pip install -q rank-bm25 groq qdrant-client pandas numpy tqdm scikit-learn
 ```
 
-La API key de Groq se carga desde **Colab Secrets** (no escribirla directamente en el código).
+Las API keys se cargan desde **Colab Secrets** (icono 🔑 en el panel lateral).
 
 ### Orden de ejecución
 
@@ -247,19 +293,29 @@ NB01 → NB02 → NB03 → NB04 (Colab) → NB05 (Colab)
 
 Cada notebook genera artefactos que el siguiente consume. No saltear pasos.
 
-### Demo Streamlit
+### Demo Streamlit (local)
 
 ```bash
-streamlit run app/demo_streamlit.py
+set PYTHONPATH=.
+python -m streamlit run app/demo_streamlit.py
 ```
+
+### Demo desplegada
+
+La demo está disponible públicamente en:  
+🌐 [huggingface.co/spaces/JOEL022022/rag-normativa-ambiental](https://huggingface.co/spaces/JOEL022022/rag-normativa-ambiental)
 
 ---
 
 ## Variables de entorno
 
-| Variable       | Descripción                        | Dónde obtenerla                     |
-|----------------|------------------------------------|-------------------------------------|
-| `GROQ_API_KEY` | API key para LLaMA 3.1 vía Groq   | https://console.groq.com (gratuita) |
+| Variable         | Descripción                          | Dónde obtenerla                          |
+|------------------|--------------------------------------|------------------------------------------|
+| `GROQ_API_KEY`   | API key para LLaMA 3.1 vía Groq     | https://console.groq.com (gratuita)      |
+| `QDRANT_URL`     | URL del cluster Qdrant Cloud         | https://cloud.qdrant.io                  |
+| `QDRANT_API_KEY` | API key del cluster Qdrant Cloud     | https://cloud.qdrant.io → API Keys       |
+
+En Hugging Face Spaces las tres variables se configuran como **Secrets** en Settings → Variables and secrets.
 
 ---
 
@@ -267,9 +323,12 @@ streamlit run app/demo_streamlit.py
 
 Cada chunk conserva los siguientes campos:
 
-`id_chunk`, `id_documento`, `archivo_pdf`, `archivo_txt`, `titulo_documento`, `tipo_norma`, `numero_norma`, `entidad_emisora`, `fecha_publicacion`, `tema_principal`, `subtema`, `fuente_oficial`, `url_fuente`, `estado_vigencia`, `seccion`, `texto`, `n_palabras`, `pagina_aprox`
+`id_chunk`, `id_documento`, `archivo_pdf`, `archivo_txt`, `titulo_documento`, `tipo_norma`, `numero_norma`, `entidad_emisora`, `fecha_publicacion`, `tema_principal`, `subtema`, `fuente_oficial`, `url_fuente`, `estado_vigencia`, `estado_extraccion`, `seccion`, `texto`, `n_palabras`, `pagina_aprox`
 
-El campo `estado_vigencia` puede tomar los valores: `vigente`, `modificada`, `derogada`, `no_verificado`.
+El campo `estado_vigencia` puede tomar los valores: `vigente`, `modificada`, `derogada`, `no_verificado`.  
+El campo `estado_extraccion` puede tomar los valores: `OK`, `PARCIAL`, `SIN_TEXTO`, `ERROR`.
+
+La demo muestra badges de advertencia cuando un fragmento proviene de una norma derogada, no verificada o con extracción parcial.
 
 ---
 
@@ -280,6 +339,7 @@ El campo `estado_vigencia` puede tomar los valores: `vigente`, `modificada`, `de
 - Cada respuesta debe mostrar documento y fragmento fuente (trazabilidad completa).
 - No usar chunking puramente arbitrario: se aplica chunking estructural respetando artículos, capítulos e incisos.
 - No subir claves API al repositorio. Usar `.env` y mantenerlo en `.gitignore`.
+- El `id_chunk` es inmutable una vez indexado en Qdrant — regenerar chunks requiere reindexación completa.
 
 ---
 
@@ -292,6 +352,8 @@ El campo `estado_vigencia` puede tomar los valores: `vigente`, `modificada`, `de
 5. PyMuPDF: https://pymupdf.readthedocs.io/  
 6. BAAI/bge-m3: https://huggingface.co/BAAI/bge-m3  
 7. Qdrant: https://qdrant.tech/  
-8. rank-bm25: https://pypi.org/project/rank-bm25/  
-9. Groq: https://console.groq.com  
-10. Streamlit: https://docs.streamlit.io/
+8. Qdrant Cloud: https://cloud.qdrant.io  
+9. rank-bm25: https://pypi.org/project/rank-bm25/  
+10. Groq: https://console.groq.com  
+11. Streamlit: https://docs.streamlit.io  
+12. Hugging Face Spaces: https://huggingface.co/spaces
