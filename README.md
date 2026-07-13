@@ -1,6 +1,9 @@
 # RAG con Búsqueda Híbrida para Normativa Ambiental Peruana
 
 **Curso:** Tópicos Avanzados de Base de Datos  
+**Año:** 2026-A  
+**Alumnos:** Joel Condori-Leon, Luis Yana-Agramonte  
+**Docente:** Antonio Arroyo-Paz  
 **Tipo de trabajo:** Artículo / propuesta de investigación aplicada  
 **Dominio:** Normativa ambiental peruana  
 **Enfoque técnico:** RAG, búsqueda híbrida, bases de datos vectoriales, métricas de recuperación y optimización
